@@ -6,7 +6,65 @@ export class Item {
     constructor(name: string, sellIn: number, quality: number) {
         this.name = name;
         this.sellIn = sellIn;
-        this.quality = quality;
+        // The Quality of an item is never more than 50
+        // "Sulfuras" is a legendary item and as such its Quality is 80
+        this.quality = (name==ItemTypes.HAND) ? 80: Math.min(50,quality);
+    }
+
+    updateBrie(){
+    
+        this.quality = Math.min(this.quality + 1,50);
+    
+        this.sellIn = this.sellIn - 1;
+    
+        if(this.sellIn < 0){
+            this.quality = Math.min(this.quality + 1, 50);
+        }
+    }
+    updatePass(){
+        if(this.sellIn < 6){
+            this.quality = Math.min(this.quality + 3, 50);
+        }
+        else if(this.sellIn < 11){
+            this.quality = Math.min(this.quality + 2, 50);
+        }
+        else{
+            this.quality = Math.min(this.quality + 1, 50);
+        }
+    
+        this.sellIn = this.sellIn - 1;
+    
+        if(this.sellIn < 0){
+            this.quality = 0;
+        }
+    }
+    updateHand(){
+        // Do Nothing
+    }
+    updateNormal(){
+        this.quality = Math.max(this.quality - 1, 0);
+    
+        this.sellIn = this.sellIn - 1;
+    
+        if(this.sellIn < 0){
+            this.quality = Math.max(this.quality - 1, 0);
+        }
+    }
+
+}
+
+export class ConjuredItem extends Item{
+    constructor(name: string, sellIn: number, quality: number){
+        super(name,sellIn,quality);
+    }
+    updateConjured(){
+        this.quality = Math.max(this.quality - 2, 0);
+    
+        this.sellIn = this.sellIn - 1;
+    
+        if(this.sellIn < 0){
+            this.quality = Math.max(this.quality - 2, 0);
+        }
     }
 }
 
@@ -16,45 +74,6 @@ const ItemTypes = {
     HAND: 'Sulfuras, Hand of Ragnaros',
 }
 
-function updateBrie(item: Item){
-    
-    item.quality = Math.min(item.quality+1,50);
-
-    item.sellIn = item.sellIn - 1;
-
-    if(item.sellIn < 0){
-        item.quality = Math.min(item.quality + 1, 50);
-    }
-}
-function updatePass(item: Item){
-    if(item.sellIn < 6){
-        item.quality = Math.min(item.quality+3,50);
-    }
-    else if(item.sellIn < 11){
-        item.quality = Math.min(item.quality+2,50);
-    }
-    else{
-        item.quality = Math.min(item.quality+1,50);
-    }
-
-    item.sellIn = item.sellIn - 1;
-
-    if(item.sellIn < 0){
-        item.quality = 0;
-    }
-}
-function updateHand(item: Item){
-    // Do Nothing
-}
-export function updateNormal(item: Item){
-    item.quality = Math.max(item.quality-1,0);
-
-    item.sellIn = item.sellIn - 1;
-
-    if(item.sellIn < 0){
-        item.quality = Math.max(item.quality - 1, 0);
-    }
-}
 
 
 export class GildedRose {
@@ -66,18 +85,22 @@ export class GildedRose {
 
     updateQuality(){
         for (const item of this.items){
+            if(item instanceof ConjuredItem){
+                item.updateConjured();
+                continue;
+            }
             switch(item.name){
                 case ItemTypes.BRIE:
-                    updateBrie(item);
+                    item.updateBrie();
                     continue;
                 case ItemTypes.HAND:
-                    updateHand(item);
+                    item.updateHand();
                     continue;
                 case ItemTypes.PASS:
-                    updatePass(item);
+                    item.updatePass();
                     continue;
                 default:
-                    updateNormal(item);
+                    item.updateNormal();
                     continue;
             }
 

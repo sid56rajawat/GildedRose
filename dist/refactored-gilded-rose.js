@@ -1,54 +1,90 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GildedRose = exports.Item = void 0;
+exports.GildedRose = exports.ConjuredItem = exports.Item = void 0;
 class Item {
     constructor(name, sellIn, quality) {
         this.name = name;
         this.sellIn = sellIn;
-        this.quality = quality;
+        // The Quality of an item is never more than 50
+        // "Sulfuras" is a legendary item and as such its Quality is 80
+        this.quality = (name == ItemTypes.HAND) ? 80 : Math.min(50, quality);
+    }
+    updateBrie() {
+        this.quality = Math.min(this.quality + 1, 50);
+        this.sellIn = this.sellIn - 1;
+        if (this.sellIn < 0) {
+            this.quality = Math.min(this.quality + 1, 50);
+        }
+    }
+    updatePass() {
+        if (this.sellIn < 6) {
+            this.quality = Math.min(this.quality + 3, 50);
+        }
+        else if (this.sellIn < 11) {
+            this.quality = Math.min(this.quality + 2, 50);
+        }
+        else {
+            this.quality = Math.min(this.quality + 1, 50);
+        }
+        this.sellIn = this.sellIn - 1;
+        if (this.sellIn < 0) {
+            this.quality = 0;
+        }
+    }
+    updateHand() {
+        // Do Nothing
+    }
+    updateNormal() {
+        this.quality = Math.max(this.quality - 1, 0);
+        this.sellIn = this.sellIn - 1;
+        if (this.sellIn < 0) {
+            this.quality = Math.max(this.quality - 1, 0);
+        }
     }
 }
 exports.Item = Item;
+class ConjuredItem extends Item {
+    constructor(name, sellIn, quality) {
+        super(name, sellIn, quality);
+    }
+    updateConjured() {
+        this.quality = Math.max(this.quality - 2, 0);
+        this.sellIn = this.sellIn - 1;
+        if (this.sellIn < 0) {
+            this.quality = Math.max(this.quality - 2, 0);
+        }
+    }
+}
+exports.ConjuredItem = ConjuredItem;
+const ItemTypes = {
+    BRIE: 'Aged Brie',
+    PASS: 'Backstage passes to a TAFKAL80ETC concert',
+    HAND: 'Sulfuras, Hand of Ragnaros',
+};
 class GildedRose {
     constructor(items = []) {
         this.items = items;
     }
     updateQuality() {
-        for (let i = 0; i < this.items.length; i++) {
-            let item = this.items[i];
-            if (item.name == 'Sulfuras, Hand of Ragnaros') {
+        for (const item of this.items) {
+            if (item instanceof ConjuredItem) {
+                item.updateConjured();
                 continue;
             }
-            else if (item.name == 'Aged Brie') {
-                item.quality = Math.min(item.quality + 1, 50);
+            switch (item.name) {
+                case ItemTypes.BRIE:
+                    item.updateBrie();
+                    continue;
+                case ItemTypes.HAND:
+                    item.updateHand();
+                    continue;
+                case ItemTypes.PASS:
+                    item.updatePass();
+                    continue;
+                default:
+                    item.updateNormal();
+                    continue;
             }
-            else if (item.name == 'Backstage passes to a TAFKAL80ETC concert') {
-                if (item.sellIn < 6) {
-                    item.quality = Math.min(item.quality + 3, 50);
-                }
-                else if (item.sellIn < 11) {
-                    item.quality = Math.min(item.quality + 2, 50);
-                }
-                else {
-                    item.quality = Math.min(item.quality + 1, 50);
-                }
-            }
-            else {
-                item.quality = Math.max(item.quality - 1, 0);
-            }
-            item.sellIn = item.sellIn - 1;
-            if (item.sellIn < 0) {
-                if (item.name == 'Aged Brie') {
-                    item.quality = Math.min(item.quality + 1, 50);
-                }
-                else if (item.name == 'Backstage passes to a TAFKAL80ETC concert') {
-                    item.quality = 0;
-                }
-                else {
-                    item.quality = Math.max(item.quality - 1, 0);
-                }
-            }
-            this.items[i] = item;
         }
         return this.items;
     }

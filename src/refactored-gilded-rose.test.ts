@@ -1,4 +1,4 @@
-import { Item, GildedRose, updateNormal} from './refactored-gilded-rose';
+import { Item, GildedRose, ConjuredItem} from './refactored-gilded-rose';
 
 test('Should foo', () => {
     const gildedRose = new GildedRose([new Item('foo', 0, 0)]);
@@ -125,12 +125,69 @@ test('Backstage passes\'s quality increses by 1 if its sellIn greater than 10', 
 // Test on Sulfuras, Hand of Ragnaros
 test('Sulfarus does not change at all', () => {
     const gildedRose = new GildedRose([
-        new Item('Sulfuras, Hand of Ragnaros',4,15)
+        new Item('Sulfuras, Hand of Ragnaros',4,80)
     ]);
     let items = gildedRose.updateQuality();
-    expect(items[0].quality).toBe(15);
+    expect(items[0].quality).toBe(80);
     expect(items[0].sellIn).toBe(4);
     items = gildedRose.updateQuality();
-    expect(items[0].quality).toBe(15);
+    expect(items[0].quality).toBe(80);
     expect(items[0].sellIn).toBe(4);
+});
+
+// Test on Conjured Items
+test('Conjured Item degrades twice as fast as normal Item', () => {
+    const gildedRose = new GildedRose([
+        new ConjuredItem('Mana Cake',4,10)
+    ]);
+    let items = gildedRose.updateQuality();
+    expect(items[0].quality).toBe(8);
+    expect(items[0].sellIn).toBe(3);
+});
+test('Conjured Item with negative SellIn degrades by four', () => {
+    const gildedRose = new GildedRose([
+        new ConjuredItem('Mana Cake',0,10)
+    ]);
+    let items = gildedRose.updateQuality();
+    expect(items[0].quality).toBe(6);
+    expect(items[0].sellIn).toBe(-1);
+    items = gildedRose.updateQuality();
+    expect(items[0].quality).toBe(2);
+    expect(items[0].sellIn).toBe(-2);
+});
+
+// General Test Cases (for all items)
+test('For All Items Quality does not go below 0', () => {
+    const gildedRose = new GildedRose([
+        new Item('banana',5,0),
+        new Item('Aged Brie',5,0),
+        new Item('Backstage passes to a TAFKAL80ETC concert',5,0),
+        new Item('Sulfuras, Hand of Ragnaros',4,80),
+        new ConjuredItem('Mana Cake',5,0)
+    ]);
+    let items = gildedRose.updateQuality();
+    for(const item of items){
+        expect(item.quality).toBeGreaterThanOrEqual(0);
+    }
+    items = gildedRose.updateQuality();
+    for(const item of items){
+        expect(item.quality).toBeGreaterThanOrEqual(0);
+    }
+});
+
+test('For All Items Quality does not go above 50 except Sulfuras', () => {
+    const gildedRose = new GildedRose([
+        new Item('banana',5,50),
+        new Item('Aged Brie',5,50),
+        new Item('Backstage passes to a TAFKAL80ETC concert',5,50),
+        new ConjuredItem('Mana Cake',5,50)
+    ]);
+    let items = gildedRose.updateQuality();
+    for(const item of items){
+        expect(item.quality).toBeLessThanOrEqual(50);
+    }
+    items = gildedRose.updateQuality();
+    for(const item of items){
+        expect(item.quality).toBeLessThanOrEqual(50);
+    }
 });
