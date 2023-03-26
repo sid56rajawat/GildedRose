@@ -10,6 +10,7 @@ The program is built on TypeScript 5.0.2 <br>
 The following libraries were used:
 - Node
 - Jest
+- ts-jest
 
 ## Testing
 Built and tested
@@ -27,10 +28,9 @@ Step3: install dependencies
 ```shell
 $ npm install
 ```
-Step4: Test Using following commands
+Step4: Run the tests Using following commands
 ```shell
-$ npm test ./dist/gilded-rose.test.js
-$ npm test ./dist/refactored-gilded-rose.test.js
+$ npm test
 ```
 
 ## Acknowledgements
